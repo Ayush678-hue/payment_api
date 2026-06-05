@@ -6,7 +6,9 @@ from django.test import TestCase
 from django.utils import timezone
 from rest_framework.test import APIClient
 
-from payments.models import IdempotencyRecord, Payment
+import secrets
+import hashlib
+from payments.models import IdempotencyRecord, Payment, APIKey
 
 
 class PaymentIdempotencyTests(TestCase):
@@ -22,8 +24,62 @@ class PaymentIdempotencyTests(TestCase):
             "description": "Test payment",
         }
 
+        # Create a valid API key in database
+        self.prefix = secrets.token_hex(4)
+        self.secret = secrets.token_urlsafe(32)
+        self.raw_api_key = f"pay_{self.prefix}.{self.secret}"
+        hashed_key = hashlib.sha256(self.raw_api_key.encode()).hexdigest()
+
+        self.api_key_obj = APIKey.objects.create(
+            name="Test Client",
+            prefix=self.prefix,
+            hashed_key=hashed_key,
+            is_active=True
+        )
+
+        # Pre-authenticate the client with the valid API key
+        self.client.credentials(HTTP_X_API_KEY=self.raw_api_key)
+
     def _make_key(self):
         return str(uuid.uuid4())
+
+    # ── API Key Security ──────────────────────────────────────────────────
+
+    def test_missing_api_key_returns_403(self):
+        """Requests without an API key must be rejected with 403."""
+        client = APIClient()
+        resp = client.post(
+            self.url,
+            data=self.valid_payload,
+            format="json",
+            HTTP_IDEMPOTENCY_KEY=self._make_key()
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_invalid_api_key_returns_403(self):
+        """Requests with an invalid API key must be rejected with 403."""
+        client = APIClient()
+        client.credentials(HTTP_X_API_KEY="pay_invalid.keyvalue")
+        resp = client.post(
+            self.url,
+            data=self.valid_payload,
+            format="json",
+            HTTP_IDEMPOTENCY_KEY=self._make_key()
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_inactive_api_key_returns_403(self):
+        """Requests with an inactive API key must be rejected with 403."""
+        self.api_key_obj.is_active = False
+        self.api_key_obj.save()
+
+        resp = self.client.post(
+            self.url,
+            data=self.valid_payload,
+            format="json",
+            HTTP_IDEMPOTENCY_KEY=self._make_key()
+        )
+        self.assertEqual(resp.status_code, 403)
 
     # ── Basic idempotency ────────────────────────────────────────────────
 

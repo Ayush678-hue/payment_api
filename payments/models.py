@@ -105,3 +105,31 @@ class IdempotencyRecord(models.Model):
         if self.locked_at is None:
             return False
         return (timezone.now() - self.locked_at) < timedelta(seconds=60)
+
+
+class APIKey(models.Model):
+    """
+    Secure database-backed API Key model.
+    Only the hashed version of the key is stored in the database.
+    """
+    name = models.CharField(
+        max_length=255, 
+        help_text="A friendly name identifying the client/app using this key."
+    )
+    prefix = models.CharField(max_length=8, unique=True, editable=False)
+    hashed_key = models.CharField(max_length=64, unique=True, db_index=True, editable=False)
+    is_active = models.BooleanField(
+        default=True, 
+        help_text="Designates whether this API key is active. Uncheck to revoke access."
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "API Key"
+        verbose_name_plural = "API Keys"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} (prefix: {self.prefix})"
+

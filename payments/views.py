@@ -13,6 +13,7 @@ from .serializers import (
     PaymentCreateSerializer,
     PaymentResponseSerializer,
 )
+from .permissions import HasAPIKey
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,7 @@ class PaymentView(APIView):
     Retries with the same key return the original response without
     re-processing the payment.
     """
+    permission_classes = [HasAPIKey]
 
     def post(self, request):
         # ── 1. Extract & validate the idempotency key ────────────────────
@@ -226,6 +228,7 @@ class PaymentDetailView(APIView):
     GET /api/payments/<uuid:payment_id>/
     Retrieve a single payment by its UUID.
     """
+    permission_classes = [HasAPIKey]
 
     def get(self, request, payment_id):
         try:
@@ -243,6 +246,7 @@ class PaymentListView(APIView):
     GET /api/payments/
     List all payments, newest first.
     """
+    permission_classes = [HasAPIKey]
 
     def get(self, request):
         payments = Payment.objects.all()[:50]
