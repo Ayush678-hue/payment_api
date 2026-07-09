@@ -8,10 +8,11 @@ A production-grade, fault-tolerant financial payment API built with **Python 3**
 
 | Resource | URL / Endpoint |
 | :--- | :--- |
-| **Live Tunnel Demo** | [`https://rude-breads-smell.loca.lt`](https://rude-breads-smell.loca.lt) *(Note: Click "Continue" once on first browser visit)* |
-| **Admin Dashboard** | [`/admin/`](https://rude-breads-smell.loca.lt/admin/) *(Login: `Ayush` / `Tl02xd1@3140`)* |
-| **List Payments** | `GET /api/payments/` *(Requires `X-API-Key` header)* |
-| **Process Payment** | `POST /api/payments/process-payment/` *(Requires `Idempotency-Key` & `X-API-Key` headers)* |
+| **🟢 24/7 Live Cloud Demo** | [`https://payment-api-3fi4.onrender.com`](https://payment-api-3fi4.onrender.com) *(Hosted 24/7 on Render Cloud — Never goes offline!)* |
+| **Local Tunnel Demo** | [`https://rude-breads-smell.loca.lt`](https://rude-breads-smell.loca.lt) *(Active only during active local dev sessions)* |
+| **Admin Dashboard** | [`https://payment-api-3fi4.onrender.com/admin/`](https://payment-api-3fi4.onrender.com/admin/) *(Login: `Ayush` / `Tl02xd1@3140`)* |
+| **List Payments** | `GET https://payment-api-3fi4.onrender.com/api/payments/` *(Requires `X-API-Key` header)* |
+| **Process Payment** | `POST https://payment-api-3fi4.onrender.com/api/payments/process-payment/` *(Requires `Idempotency-Key` & `X-API-Key`)* |
 
 ---
 
