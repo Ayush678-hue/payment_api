@@ -25,23 +25,23 @@ Therefore, our system architecture is **event-driven, asynchronous, and read-onl
 
 ```mermaid
 graph TD
-    Client[Client App / Browser / cURL] -->|1. POST process-payment/| API[Core Payment API<br>Synchronous Engine]
+    Client["Client App / Browser / cURL"] -->|1. POST process-payment/| API["Core Payment API Engine"]
     
-    subgraph Core Payment Engine
-        API -->|2. SHA-256 Hash + UUID Check| DB_Lock[PostgreSQL Row-Level Lock<br>SELECT ... FOR UPDATE]
-        DB_Lock -->|3a. Fresh Request| Gateway[Simulate Payment Processor]
-        DB_Lock -->|3b. Duplicate Replay| Cache[Return Cached Response<br>Zero Double-Charging]
-        Gateway -->|4. Save Payment & Lock Status| DB[(PostgreSQL Database)]
-    </subgraph>
+    subgraph CoreEngine ["Core Payment Engine (Synchronous)"]
+        API -->|"2. SHA-256 Hash + UUID Check"| DBLock["PostgreSQL Row-Level Lock (SELECT ... FOR UPDATE)"]
+        DBLock -->|"3a. Fresh Request"| Gateway["Simulate Payment Processor"]
+        DBLock -->|"3b. Duplicate Replay"| Cache["Return Cached Response (Zero Double-Charging)"]
+        Gateway -->|"4. Save Payment & Lock Status"| DB[("PostgreSQL Database")]
+    end
     
-    API -.->|5. Emit Async Signal<br>django.dispatch.Signal| Redis[Redis Stream / Broker]
+    API -.->|"5. Emit Async Signal (django.dispatch.Signal)"| Redis["Redis Stream / Broker"]
     
-    subgraph Asynchronous AI Intelligence Layer
-        Redis -->|6. Dequeue Task| Celery[Celery Worker Pool]
-        Celery -->|7. Scrub PII Cards/CVV| Redact[Redaction Service]
-        Redact -->|8. Render Prompt Template| LLM[LLM Gateway<br>w/ Fallback Rule Engine]
-        LLM -->|9. Persist AI Explanation & Score| AI_DB[(AI Event & Risk Tables)]
-    </subgraph>
+    subgraph AILayer ["Asynchronous AI Intelligence Layer"]
+        Redis -->|"6. Dequeue Task"| Celery["Celery Worker Pool"]
+        Celery -->|"7. Scrub PII Cards / CVV"| Redact["Redaction Service"]
+        Redact -->|"8. Render Prompt Template"| LLM["LLM Gateway w/ Fallback Rule Engine"]
+        LLM -->|"9. Persist AI Explanation & Score"| AIDB[("AI Event & Risk Tables")]
+    end
 ```
 
 ---
