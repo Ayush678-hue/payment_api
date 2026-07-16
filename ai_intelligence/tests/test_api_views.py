@@ -76,8 +76,8 @@ class AIEndpointsAPITests(TestCase):
     def test_landing_page_html(self):
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertIn("Idempotent payment engine", resp.content.decode('utf-8'))
-        self.assertIn("Try Idempotency Live", resp.content.decode('utf-8'))
+        self.assertIn("not by promise.", resp.content.decode('utf-8'))
+        self.assertIn("Fire duplicate request", resp.content.decode('utf-8'))
 
     def test_api_root_json(self):
         resp = self.client.get("/api/")
